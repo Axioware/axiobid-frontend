@@ -2,30 +2,292 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import { Sidebar } from "@/components/sidebar";
-import { NewBidForm } from "@/components/new-bid-form";
 import { ChatView } from "@/components/chat-view";
+import { NewBidForm } from "@/components/new-bid-form";
 import { ProfileModal } from "@/components/profile-modal";
 import { ProjectsModal } from "@/components/projects-modal";
 import { PromptsModal } from "@/components/prompts-modal";
+import { Sidebar } from "@/components/sidebar";
 import {
-  fetchProfiles,
-  fetchJobs,
   fetchJobConversation,
+  fetchJobs,
+  fetchProfiles,
   streamGenerateBid,
   streamRevision,
-  type Profile,
-  type Job,
   type Conversation,
   type GenerateBidPayload,
+  type Job,
+  type Profile,
 } from "@/lib/api";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [{ title: "BidCraft — AI Bid Generator" }],
   }),
-  component: ChatApp,
+  component: AuthenticatedChatApp,
 });
+
+type GoogleCredentialResponse = {
+  credential?: string;
+};
+
+type GoogleUser = {
+  id: string;
+  google_sub: string;
+  email: string;
+  email_verified: boolean;
+  name: string;
+  given_name: string;
+  family_name: string;
+  picture: string;
+  locale: string;
+  provider: string;
+  last_login_at: string;
+  created_at: string;
+  updated_at: string;
+};
+
+type GoogleAuthResponse = {
+  user: GoogleUser;
+  message: string;
+};
+
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        id: {
+          initialize: (options: {
+            client_id: string;
+            callback: (response: GoogleCredentialResponse) => void;
+          }) => void;
+          renderButton: (
+            parent: HTMLElement,
+            options: {
+              theme?: "outline" | "filled_blue" | "filled_black";
+              size?: "large" | "medium" | "small";
+              type?: "standard" | "icon";
+              shape?: "rectangular" | "pill" | "circle" | "square";
+              text?: "signin_with" | "signup_with" | "continue_with" | "signin";
+              width?: number;
+            },
+          ) => void;
+        };
+      };
+    };
+  }
+}
+
+const GOOGLE_SCRIPT_SRC = "https://accounts.google.com/gsi/client";
+const STORED_USER_KEY = "google_auth_user";
+
+function readStoredUser() {
+  try {
+    const value = localStorage.getItem(STORED_USER_KEY);
+    return value ? (JSON.parse(value) as GoogleUser) : null;
+  } catch {
+    return null;
+  }
+}
+
+function AuthenticatedChatApp() {
+  const [user, setUser] = useState<GoogleUser | null>(null);
+  const [hasCheckedStorage, setHasCheckedStorage] = useState(false);
+
+  useEffect(() => {
+    setUser(readStoredUser());
+    setHasCheckedStorage(true);
+  }, []);
+
+  if (!hasCheckedStorage) {
+    return <div className="app-canvas min-h-screen" />;
+  }
+
+  if (!user) {
+    return <GoogleAuthPage onAuthSuccess={setUser} />;
+  }
+
+  return <ChatApp />;
+}
+
+function GoogleAuthPage({ onAuthSuccess }: { onAuthSuccess: (user: GoogleUser) => void }) {
+  const buttonRef = useRef<HTMLDivElement | null>(null);
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const googleClientId = import.meta.env.GOOGLE_CLIENT_ID as string | undefined;
+  const apiBase = import.meta.env.VITE_API_BASE as string | undefined;
+
+  useEffect(() => {
+    if (!googleClientId) {
+      setError("Google client ID is not configured.");
+      return;
+    }
+
+    if (!apiBase) {
+      setError("API base URL is not configured.");
+      return;
+    }
+
+    let cancelled = false;
+
+    const handleCredential = async (response: GoogleCredentialResponse) => {
+      const credential = response.credential;
+      if (!credential) {
+        setError("Google did not return a credential.");
+        return;
+      }
+
+      setIsSubmitting(true);
+      setError("");
+
+      try {
+        const res = await fetch(`${apiBase}/api/v1/auth/google`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ credential }),
+        });
+
+        if (!res.ok) {
+          throw new Error("Google sign-in failed.");
+        }
+
+        const data = (await res.json()) as GoogleAuthResponse;
+
+        try {
+          localStorage.setItem(STORED_USER_KEY, JSON.stringify(data.user));
+        } catch {
+          // The in-memory auth state still lets the user enter the app.
+        }
+
+        onAuthSuccess(data.user);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Google sign-in failed.");
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
+
+    const renderGoogleButton = () => {
+      if (cancelled || !buttonRef.current || !window.google) return;
+
+      buttonRef.current.innerHTML = "";
+      window.google.accounts.id.initialize({
+        client_id: googleClientId,
+        callback: handleCredential,
+      });
+      window.google.accounts.id.renderButton(buttonRef.current, {
+        theme: "outline",
+        size: "large",
+        type: "standard",
+        shape: "rectangular",
+        text: "signin_with",
+        width: 280,
+      });
+    };
+
+    if (window.google) {
+      renderGoogleButton();
+      return;
+    }
+
+    const existingScript = document.querySelector<HTMLScriptElement>(
+      `script[src="${GOOGLE_SCRIPT_SRC}"]`,
+    );
+
+    if (existingScript) {
+      existingScript.addEventListener("load", renderGoogleButton, { once: true });
+      return () => {
+        cancelled = true;
+        existingScript.removeEventListener("load", renderGoogleButton);
+      };
+    }
+
+    const script = document.createElement("script");
+    script.src = GOOGLE_SCRIPT_SRC;
+    script.async = true;
+    script.defer = true;
+    script.onload = renderGoogleButton;
+    script.onerror = () => setError("Could not load Google sign-in.");
+    document.head.appendChild(script);
+
+    return () => {
+      cancelled = true;
+      script.onload = null;
+      script.onerror = null;
+    };
+  }, [apiBase, googleClientId, onAuthSuccess]);
+
+  return (
+    <main className="app-canvas relative isolate flex min-h-screen items-center justify-center overflow-hidden px-4 py-8">
+      <div className="ambient-grid" />
+      <div className="relative z-10 grid w-full max-w-5xl overflow-hidden rounded-3xl border border-border/60 bg-background/80 shadow-2xl shadow-black/30 lg:grid-cols-[1.1fr_0.9fr]">
+        <section className="relative hidden min-h-[36rem] overflow-hidden border-r border-border/60 p-8 lg:block">
+          <div className="auth-orbit" />
+          <div className="auth-float glass-panel absolute left-8 top-10 w-64 rounded-2xl p-4">
+            <p className="text-xs font-medium uppercase tracking-[0.24em] text-primary">BidCraft</p>
+            <p className="mt-2 text-2xl font-semibold leading-tight">
+              Turn job posts into sharp proposals.
+            </p>
+          </div>
+          <div className="auth-float glass-panel absolute bottom-14 left-12 w-56 rounded-2xl p-4">
+            <div className="mb-3 h-2 w-20 rounded-full bg-primary/70" />
+            <div className="space-y-2">
+              <div className="h-2 rounded-full bg-foreground/20" />
+              <div className="h-2 w-10/12 rounded-full bg-foreground/14" />
+              <div className="h-2 w-7/12 rounded-full bg-foreground/10" />
+            </div>
+          </div>
+          <div className="auth-float glass-panel absolute bottom-24 right-10 w-52 rounded-2xl p-4">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-xl bg-linear-to-br from-primary to-[var(--primary-glow)]" />
+              <div className="min-w-0 flex-1 space-y-1.5">
+                <div className="h-2 rounded-full bg-foreground/20" />
+                <div className="h-2 w-3/5 rounded-full bg-foreground/12" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="flex min-h-[34rem] flex-col justify-center px-6 py-10 sm:px-10">
+          <div className="mx-auto w-full max-w-sm">
+            <div className="mb-8">
+              <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br from-primary to-[var(--primary-glow)] text-xl font-bold text-primary-foreground shadow-xl shadow-primary/20">
+                B
+              </div>
+              <p className="mb-2 text-sm font-medium uppercase tracking-[0.22em] text-primary">
+                Welcome Back
+              </p>
+              <h1 className="text-3xl font-semibold tracking-tight">
+                Sign in to your bid workspace
+              </h1>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                Continue with Google to access your profiles, reference projects, prompts, and bid
+                conversations.
+              </p>
+            </div>
+
+            <div className="glass-panel rounded-2xl p-5">
+              <div ref={buttonRef} aria-label="Sign in with Google" />
+              {isSubmitting ? (
+                <p className="mt-4 text-sm text-muted-foreground">Signing in...</p>
+              ) : null}
+              {error ? (
+                <p className="mt-4 text-sm text-destructive" role="alert">
+                  {error}
+                </p>
+              ) : null}
+            </div>
+
+            <p className="mt-4 text-xs leading-relaxed text-muted-foreground/75">
+              Google authentication only. No password forms, no extra signup flow.
+            </p>
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}
 
 function ChatApp() {
   // ── State ──────────────────────────────────────────────────────────────────
@@ -61,7 +323,9 @@ function ChatApp() {
     try {
       if (activeProfileId) localStorage.setItem("activeProfileId", activeProfileId);
       else localStorage.removeItem("activeProfileId");
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, [activeProfileId]);
 
   // ── Data loading ───────────────────────────────────────────────────────────
@@ -105,7 +369,9 @@ function ChatApp() {
     try {
       const data = await fetchJobs(activeProfileId);
       setJobs(data);
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   };
 
   // ── Handlers ───────────────────────────────────────────────────────────────
@@ -191,8 +457,7 @@ function ChatApp() {
 
   const handleRevise = async (instruction: string) => {
     if (!selectedJobId || !conversation) return;
-    const latestBid =
-      conversation.messages[conversation.messages.length - 1]?.bid;
+    const latestBid = conversation.messages[conversation.messages.length - 1]?.bid;
     if (!latestBid) return;
 
     abortRef.current?.abort();
@@ -234,8 +499,7 @@ function ChatApp() {
   };
 
   // ── Derived ────────────────────────────────────────────────────────────────
-  const latestBidId =
-    conversation?.messages[conversation.messages.length - 1]?.bid?.id ?? null;
+  const latestBidId = conversation?.messages[conversation.messages.length - 1]?.bid?.id ?? null;
 
   const showChat = !showNewBidForm || streaming || !!selectedJobId;
 
@@ -290,9 +554,7 @@ function ChatApp() {
         onClose={() => setProfileModalOpen(false)}
         onSave={(saved) => {
           setProfiles((prev) =>
-            editingProfile
-              ? prev.map((p) => (p.id === saved.id ? saved : p))
-              : [...prev, saved],
+            editingProfile ? prev.map((p) => (p.id === saved.id ? saved : p)) : [...prev, saved],
           );
           if (!editingProfile) setActiveProfileId(saved.id);
           setProfileModalOpen(false);
@@ -314,10 +576,7 @@ function ChatApp() {
         onClose={() => setProjectsModalOpen(false)}
       />
 
-      <PromptsModal
-        open={promptsModalOpen}
-        onClose={() => setPromptsModalOpen(false)}
-      />
+      <PromptsModal open={promptsModalOpen} onClose={() => setPromptsModalOpen(false)} />
     </div>
   );
 }

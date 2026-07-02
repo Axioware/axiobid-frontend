@@ -15,7 +15,7 @@ function TypingDots() {
       {[0, 150, 300].map((delay) => (
         <span
           key={delay}
-          className="h-2 w-2 rounded-full bg-muted-foreground animate-bounce"
+          className="h-2 w-2 animate-bounce rounded-full bg-primary"
           style={{ animationDelay: `${delay}ms` }}
         />
       ))}
@@ -38,7 +38,7 @@ function CopyButton({ text }: { text: string }) {
   return (
     <button
       onClick={copy}
-      className="rounded p-1 text-muted-foreground hover:text-foreground transition-colors"
+      className="rounded-lg border border-transparent p-1.5 text-muted-foreground transition-colors hover:border-border hover:bg-card/70 hover:text-foreground"
       title="Copy bid"
     >
       {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
@@ -51,10 +51,10 @@ function CopyButton({ text }: { text: string }) {
 function UserBubble({ text }: { text: string }) {
   return (
     <div className="flex justify-end gap-3">
-      <div className="max-w-[80%] rounded-2xl rounded-tr-sm bg-secondary px-4 py-3">
+      <div className="max-w-[80%] rounded-2xl rounded-tr-md border border-primary/20 bg-linear-to-br from-primary/20 to-accent/30 px-4 py-3 shadow-lg shadow-black/10">
         <p className="text-sm text-foreground/90 whitespace-pre-wrap">{text}</p>
       </div>
-      <div className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/20">
+      <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/15 ring-1 ring-primary/25">
         <User className="h-4 w-4 text-primary" />
       </div>
     </div>
@@ -63,16 +63,10 @@ function UserBubble({ text }: { text: string }) {
 
 // ─── AI bubble ────────────────────────────────────────────────────────────────
 
-function AiBubble({
-  text,
-  isStreaming = false,
-}: {
-  text: string;
-  isStreaming?: boolean;
-}) {
+function AiBubble({ text, isStreaming = false }: { text: string; isStreaming?: boolean }) {
   return (
     <div className="flex gap-3 group">
-      <div className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">
+      <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-primary to-[var(--primary-glow)] text-xs font-bold text-primary-foreground shadow-lg shadow-primary/10">
         AI
       </div>
       <div className="min-w-0 flex-1">
@@ -80,7 +74,7 @@ function AiBubble({
           <TypingDots />
         ) : (
           <>
-            <div className="prose prose-sm prose-invert max-w-none text-foreground/90 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+            <div className="prose prose-sm prose-invert max-w-none rounded-2xl border border-border/70 bg-card/55 px-4 py-3 text-foreground/90 shadow-lg shadow-black/10 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
               {isStreaming && (
                 <span className="cursor-blink ml-0.5 inline-block h-4 w-[2px] translate-y-[2px] bg-primary align-middle" />
@@ -130,8 +124,7 @@ export function ChatView({
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversation, streamText, streaming]);
 
-  const canSubmit =
-    !!latestBidId && instruction.trim().length > 0 && !streaming;
+  const canSubmit = !!latestBidId && instruction.trim().length > 0 && !streaming;
 
   const handleSubmit = () => {
     if (!canSubmit) return;
@@ -147,10 +140,10 @@ export function ChatView({
   };
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
+    <div className="app-canvas flex flex-1 flex-col overflow-hidden">
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border">
-        <div className="mx-auto max-w-2xl space-y-6">
+      <div className="soft-scrollbar flex-1 overflow-y-auto px-4 py-6">
+        <div className="mx-auto max-w-3xl space-y-6">
           {conversationLoading ? (
             <div className="flex justify-center py-20">
               <TypingDots />
@@ -174,9 +167,7 @@ export function ChatView({
               {/* In-progress streaming message */}
               {(streaming || streamingUserMessage) && (
                 <div className="space-y-4">
-                  {streamingUserMessage && (
-                    <UserBubble text={streamingUserMessage} />
-                  )}
+                  {streamingUserMessage && <UserBubble text={streamingUserMessage} />}
                   <AiBubble text={streamText} isStreaming={streaming} />
                 </div>
               )}
@@ -187,9 +178,9 @@ export function ChatView({
       </div>
 
       {/* Revision input */}
-      <div className="border-t border-border bg-background/80 px-4 py-3 backdrop-blur">
-        <div className="mx-auto max-w-2xl">
-          <div className="flex items-end gap-2 rounded-xl border border-border bg-input/30 px-3 py-2 focus-within:border-ring focus-within:ring-1 focus-within:ring-ring transition-all">
+      <div className="border-t border-border/70 bg-background/90 px-4 py-3">
+        <div className="mx-auto max-w-3xl">
+          <div className="flex items-end gap-2 rounded-2xl border border-border/80 bg-card/70 px-3 py-2 shadow-2xl shadow-black/15 transition-all focus-within:border-ring focus-within:ring-1 focus-within:ring-ring">
             <Textarea
               ref={textareaRef}
               value={instruction}
@@ -203,7 +194,7 @@ export function ChatView({
               }
               disabled={!latestBidId || streaming}
               rows={1}
-              className="flex-1 resize-none border-0 bg-transparent p-0 text-sm shadow-none focus-visible:ring-0 placeholder:text-muted-foreground/60 min-h-[24px] max-h-[160px]"
+              className="max-h-[160px] min-h-[24px] flex-1 resize-none border-0 bg-transparent p-0 text-sm shadow-none placeholder:text-muted-foreground/60 focus-visible:ring-0"
             />
             {streaming ? (
               <Button

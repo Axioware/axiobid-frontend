@@ -4,11 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { TagInput } from "./tag-input";
 import type { GenerateBidPayload, Profile } from "@/lib/api";
 
@@ -30,23 +26,17 @@ const empty = {
   totalSpent: "",
 };
 
-export function NewBidForm({
-  activeProfileId,
-  onSubmit,
-  isSubmitting,
-}: NewBidFormProps) {
+export function NewBidForm({ activeProfileId, onSubmit, isSubmitting }: NewBidFormProps) {
   const [form, setForm] = useState(empty);
   const [clientOpen, setClientOpen] = useState(false);
 
-  const set = (patch: Partial<typeof empty>) =>
-    setForm((prev) => ({ ...prev, ...patch }));
+  const set = (patch: Partial<typeof empty>) => setForm((prev) => ({ ...prev, ...patch }));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title.trim() || !form.description.trim()) return;
 
-    const hasClient =
-      form.country || form.hireRate || form.reviews || form.totalSpent;
+    const hasClient = form.country || form.hireRate || form.reviews || form.totalSpent;
 
     onSubmit({
       title: form.title.trim(),
@@ -66,23 +56,21 @@ export function NewBidForm({
   };
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-start overflow-y-auto px-4 py-12">
-      <div className="w-full max-w-2xl space-y-8">
+    <div className="soft-scrollbar app-canvas flex flex-1 flex-col items-center justify-start overflow-y-auto px-4 py-10 sm:py-14">
+      <div className="w-full max-w-3xl space-y-8">
         {/* Header */}
         <div className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15">
-            <Sparkles className="h-6 w-6 text-primary" />
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br from-primary to-[var(--primary-glow)] text-primary-foreground shadow-xl shadow-primary/20">
+            <Sparkles className="h-6 w-6 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Generate a Bid
-          </h1>
-          <p className="mt-1.5 text-sm text-muted-foreground">
+          <h1 className="text-3xl font-semibold tracking-tight">Generate a Bid</h1>
+          <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
             Paste an Upwork job and get a tailored bid in seconds.
           </p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="glass-panel space-y-5 rounded-2xl p-5 sm:p-6">
           <div className="space-y-1.5">
             <Label htmlFor="jt">
               Job Title <span className="text-destructive">*</span>
@@ -136,12 +124,9 @@ export function NewBidForm({
 
           {/* Client Info accordion */}
           <Collapsible open={clientOpen} onOpenChange={setClientOpen}>
-            <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md border border-border bg-card/40 px-4 py-2.5 text-sm font-medium hover:bg-card/70 transition-colors">
+            <CollapsibleTrigger className="flex w-full items-center justify-between rounded-xl border border-border bg-card/45 px-4 py-3 text-sm font-medium transition-colors hover:bg-card/70">
               <span className="text-muted-foreground">
-                Client Info{" "}
-                <span className="font-normal text-muted-foreground/60">
-                  (optional)
-                </span>
+                Client Info <span className="font-normal text-muted-foreground/60">(optional)</span>
               </span>
               <ChevronDown
                 className={`h-4 w-4 text-muted-foreground transition-transform ${clientOpen ? "rotate-180" : ""}`}
@@ -199,7 +184,7 @@ export function NewBidForm({
               type="submit"
               size="lg"
               disabled={isSubmitting || !form.title.trim() || !form.description.trim()}
-              className="gap-2 px-8"
+              className="gap-2 px-8 shadow-xl shadow-primary/10"
             >
               <Sparkles className="h-4 w-4" />
               Generate Bid
