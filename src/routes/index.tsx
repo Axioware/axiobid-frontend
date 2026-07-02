@@ -61,6 +61,7 @@ declare global {
             client_id: string;
             callback: (response: GoogleCredentialResponse) => void;
           }) => void;
+          disableAutoSelect?: () => void;
           renderButton: (
             parent: HTMLElement,
             options: {
@@ -107,7 +108,7 @@ function AuthenticatedChatApp() {
     return <GoogleAuthPage onAuthSuccess={setUser} />;
   }
 
-  return <ChatApp />;
+  return <ChatApp onLogout={() => setUser(null)} />;
 }
 
 function GoogleAuthPage({ onAuthSuccess }: { onAuthSuccess: (user: GoogleUser) => void }) {
@@ -289,7 +290,7 @@ function GoogleAuthPage({ onAuthSuccess }: { onAuthSuccess: (user: GoogleUser) =
   );
 }
 
-function ChatApp() {
+function ChatApp({ onLogout }: { onLogout: () => void }) {
   // ── State ──────────────────────────────────────────────────────────────────
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [activeProfileId, setActiveProfileId] = useState<string | null>(() => {
@@ -405,6 +406,18 @@ function ChatApp() {
     setStreaming(false);
     setStreamText("");
     setStreamingUserMessage("");
+  };
+
+  const handleLogout = () => {
+    abortRef.current?.abort();
+    try {
+      localStorage.removeItem(STORED_USER_KEY);
+      localStorage.removeItem("activeProfileId");
+      window.google?.accounts.id.disableAutoSelect?.();
+    } catch {
+      /* ignore */
+    }
+    onLogout();
   };
 
   const handleGenerateBid = async (payload: GenerateBidPayload) => {
@@ -524,6 +537,7 @@ function ChatApp() {
         }}
         onOpenProjects={() => setProjectsModalOpen(true)}
         onOpenPrompts={() => setPromptsModalOpen(true)}
+        onLogout={handleLogout}
       />
 
       <div className="flex flex-1 flex-col min-w-0 overflow-hidden">

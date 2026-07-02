@@ -248,6 +248,26 @@ var LoaderCircle = createLucideIcon("loader-circle", [["path", {
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
+var LogOut = createLucideIcon("log-out", [
+	["path", {
+		d: "m16 17 5-5-5-5",
+		key: "1bji2h"
+	}],
+	["path", {
+		d: "M21 12H9",
+		key: "dn1m92"
+	}],
+	["path", {
+		d: "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4",
+		key: "1uf3rs"
+	}]
+]);
+/**
+* @license lucide-react v0.575.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
 var MessageSquarePlus = createLucideIcon("message-square-plus", [
 	["path", {
 		d: "M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z",
@@ -398,4 +418,4 @@ var X = createLucideIcon("x", [["path", {
 	key: "d8bk6v"
 }]]);
 //#endregion
-export { Check as _, Sparkles as a, Pencil as c, Folder as d, FileText as f, ChevronDown as g, ChevronUp as h, Square as i, MessageSquarePlus as l, CircleUser as m, User as n, SendHorizontal as o, Copy as p, Trash2 as r, Plus as s, X as t, LoaderCircle as u, ArrowLeft as v };
+export { ChevronDown as _, Sparkles as a, Pencil as c, LoaderCircle as d, Folder as f, ChevronUp as g, CircleUser as h, Square as i, MessageSquarePlus as l, Copy as m, User as n, SendHorizontal as o, FileText as p, Trash2 as r, Plus as s, X as t, LogOut as u, Check as v, ArrowLeft as y };

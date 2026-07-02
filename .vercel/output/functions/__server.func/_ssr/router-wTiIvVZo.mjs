@@ -5,7 +5,7 @@ import { N as require_jsx_runtime } from "../_libs/@radix-ui/react-alert-dialog+
 import { t as QueryClient } from "../_libs/tanstack__query-core.mjs";
 import { t as QueryClientProvider } from "../_libs/tanstack__react-query.mjs";
 import { t as Toaster } from "../_libs/sonner.mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/router-BSGOL71F.js
+//#region node_modules/.nitro/vite/services/ssr/assets/router-wTiIvVZo.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
 function reportLovableError(error, context = {}) {
@@ -130,7 +130,7 @@ function RootComponent() {
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Outlet, {}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Toaster$1, { theme: "dark" })]
 	});
 }
-var $$splitComponentImporter = () => import("./routes-AKVhu9cg.mjs");
+var $$splitComponentImporter = () => import("./routes-BJvPk5cY.mjs");
 var rootRouteChildren = { IndexRoute: createFileRoute("/")({
 	head: () => ({ meta: [{ title: "BidCraft — AI Bid Generator" }] }),
 	component: lazyRouteComponent($$splitComponentImporter, "component")

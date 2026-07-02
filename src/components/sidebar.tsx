@@ -3,6 +3,7 @@ import {
   ChevronDown,
   FileText,
   Folder,
+  LogOut,
   MessageSquarePlus,
   Pencil,
   Plus,
@@ -26,6 +27,7 @@ interface SidebarProps {
   onEditProfile: (profile: Profile) => void;
   onOpenProjects: () => void;
   onOpenPrompts: () => void;
+  onLogout: () => void;
 }
 
 function groupJobs(jobs: Job[]) {
@@ -61,6 +63,7 @@ export function Sidebar({
   onEditProfile,
   onOpenProjects,
   onOpenPrompts,
+  onLogout,
 }: SidebarProps) {
   const [profileOpen, setProfileOpen] = useState(false);
 
@@ -208,6 +211,15 @@ export function Sidebar({
         >
           <FileText className="h-4 w-4" />
           Prompts
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full justify-start gap-2 rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+          onClick={onLogout}
+        >
+          <LogOut className="h-4 w-4" />
+          Logout
         </Button>
       </div>
     </aside>

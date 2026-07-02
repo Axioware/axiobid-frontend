@@ -4,7 +4,7 @@ import { A as Slot, N as require_jsx_runtime, a as Overlay2, c as Title2, d as D
 import { n as toast } from "../_libs/sonner.mjs";
 import { t as Markdown } from "../_libs/react-markdown+[...].mjs";
 import { t as remarkGfm } from "../_libs/remark-gfm.mjs";
-import { _ as Check, a as Sparkles, c as Pencil, d as Folder, f as FileText, g as ChevronDown, h as ChevronUp, i as Square, l as MessageSquarePlus, m as CircleUser, n as User, o as SendHorizontal, p as Copy, r as Trash2, s as Plus, t as X, u as LoaderCircle, v as ArrowLeft } from "../_libs/lucide-react.mjs";
+import { _ as ChevronDown, a as Sparkles, c as Pencil, d as LoaderCircle, f as Folder, g as ChevronUp, h as CircleUser, i as Square, l as MessageSquarePlus, m as Copy, n as User, o as SendHorizontal, p as FileText, r as Trash2, s as Plus, t as X, u as LogOut, v as Check, y as ArrowLeft } from "../_libs/lucide-react.mjs";
 import { n as clsx, t as cva } from "../_libs/class-variance-authority+clsx.mjs";
 import { t as twMerge } from "../_libs/tailwind-merge.mjs";
 import { t as Root } from "../_libs/radix-ui__react-label.mjs";
@@ -12,7 +12,7 @@ import { n as CollapsibleTrigger$1, r as Root$1, t as CollapsibleContent$1 } fro
 import { i as Trigger, n as Portal, r as Root2$1, t as Content2$1 } from "../_libs/@radix-ui/react-popover+[...].mjs";
 import { a as SelectItemIndicator, c as SelectPortal, d as SelectSeparator$1, f as SelectTrigger$1, i as SelectItem$1, l as SelectScrollDownButton$1, m as SelectViewport, n as SelectContent$1, o as SelectItemText, p as SelectValue$1, r as SelectIcon, s as SelectLabel$1, t as Select$1, u as SelectScrollUpButton$1 } from "../_libs/@radix-ui/react-select+[...].mjs";
 import { i as formatDistanceToNow, n as subDays, r as isToday, t as isYesterday } from "../_libs/date-fns.mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/routes-AKVhu9cg.js
+//#region node_modules/.nitro/vite/services/ssr/assets/routes-BJvPk5cY.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
 function cn(...inputs) {
@@ -562,6 +562,41 @@ var AlertDialogCancel = import_react.forwardRef(({ className, ...props }, ref) =
 }));
 AlertDialogCancel.displayName = Cancel.displayName;
 var API_BASE = "http://localhost:8000";
+var STORED_USER_KEY$1 = "google_auth_user";
+function currentUserId() {
+	if (typeof window === "undefined") return null;
+	try {
+		const value = window.localStorage.getItem(STORED_USER_KEY$1);
+		if (!value) return null;
+		return JSON.parse(value).id || null;
+	} catch {
+		return null;
+	}
+}
+function authHeaders(headers) {
+	const userId = currentUserId();
+	if (!userId) throw new Error("No logged-in user found");
+	const nextHeaders = new Headers(headers);
+	nextHeaders.set("X-User-Id", userId);
+	return nextHeaders;
+}
+function jsonHeaders(headers) {
+	const nextHeaders = authHeaders(headers);
+	nextHeaders.set("Content-Type", "application/json");
+	return nextHeaders;
+}
+async function apiFetch(path, init = {}) {
+	return fetch(`${API_BASE}${path}`, {
+		...init,
+		headers: authHeaders(init.headers)
+	});
+}
+async function apiJsonFetch(path, init = {}) {
+	return fetch(`${API_BASE}${path}`, {
+		...init,
+		headers: jsonHeaders(init.headers)
+	});
+}
 async function consumeStream(res, onEvent) {
 	if (!res.body) throw new Error("No response body");
 	const reader = res.body.getReader();
@@ -585,78 +620,72 @@ async function consumeStream(res, onEvent) {
 	}
 }
 async function fetchProfiles() {
-	const res = await fetch(`${API_BASE}/api/v1/profiles`);
+	const res = await apiFetch("/api/v1/profiles");
 	if (!res.ok) throw new Error("Failed to fetch profiles");
 	return res.json();
 }
 async function createProfile(data) {
-	const res = await fetch(`${API_BASE}/api/v1/profiles`, {
+	const res = await apiJsonFetch("/api/v1/profiles", {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(data)
 	});
 	if (!res.ok) throw new Error("Failed to create profile");
 	return res.json();
 }
 async function updateProfile(id, data) {
-	const res = await fetch(`${API_BASE}/api/v1/profiles/${id}`, {
+	const res = await apiJsonFetch(`/api/v1/profiles/${id}`, {
 		method: "PUT",
-		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(data)
 	});
 	if (!res.ok) throw new Error("Failed to update profile");
 	return res.json();
 }
 async function deleteProfile(id) {
-	if (!(await fetch(`http://localhost:8000/api/v1/profiles/${id}`, { method: "DELETE" })).ok) throw new Error("Failed to delete profile");
+	if (!(await apiFetch(`/api/v1/profiles/${id}`, { method: "DELETE" })).ok) throw new Error("Failed to delete profile");
 }
 async function fetchProjects(profileId) {
 	const params = new URLSearchParams();
 	if (profileId) params.set("profile_id", profileId);
 	const query = params.toString();
-	const res = await fetch(`${API_BASE}/api/v1/projects${query ? `?${query}` : ""}`);
+	const res = await apiFetch(`/api/v1/projects${query ? `?${query}` : ""}`);
 	if (!res.ok) throw new Error("Failed to fetch projects");
 	return res.json();
 }
 async function createProject(data) {
-	const res = await fetch(`${API_BASE}/api/v1/projects`, {
+	const res = await apiJsonFetch("/api/v1/projects", {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(data)
 	});
 	if (!res.ok) throw new Error("Failed to create project");
 	return res.json();
 }
 async function updateProject(id, data) {
-	const res = await fetch(`${API_BASE}/api/v1/projects/${id}`, {
+	const res = await apiJsonFetch(`/api/v1/projects/${id}`, {
 		method: "PUT",
-		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(data)
 	});
 	if (!res.ok) throw new Error("Failed to update project");
 	return res.json();
 }
 async function deleteProject(id) {
-	if (!(await fetch(`http://localhost:8000/api/v1/projects/${id}`, { method: "DELETE" })).ok) throw new Error("Failed to delete project");
+	if (!(await apiFetch(`/api/v1/projects/${id}`, { method: "DELETE" })).ok) throw new Error("Failed to delete project");
 }
 async function fetchPrompts() {
-	const res = await fetch(`${API_BASE}/api/v1/prompts`);
+	const res = await apiFetch("/api/v1/prompts");
 	if (!res.ok) throw new Error("Failed to fetch prompts");
 	return res.json();
 }
 async function updatePrompt(id, prompt) {
-	const res = await fetch(`${API_BASE}/api/v1/prompts/${id}`, {
+	const res = await apiJsonFetch(`/api/v1/prompts/${id}`, {
 		method: "PUT",
-		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({ prompt })
 	});
 	if (!res.ok) throw new Error("Failed to update prompt");
 	return res.json();
 }
 async function createPrompt(type, prompt) {
-	const res = await fetch(`${API_BASE}/api/v1/prompts`, {
+	const res = await apiJsonFetch("/api/v1/prompts", {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({
 			type,
 			prompt
@@ -668,19 +697,18 @@ async function createPrompt(type, prompt) {
 async function fetchJobs(profileId, limit = 50) {
 	const params = new URLSearchParams({ limit: String(limit) });
 	if (profileId) params.set("profile_id", profileId);
-	const res = await fetch(`${API_BASE}/api/v1/jobs?${params}`);
+	const res = await apiFetch(`/api/v1/jobs?${params}`);
 	if (!res.ok) throw new Error("Failed to fetch jobs");
 	return res.json();
 }
 async function fetchJobConversation(jobId) {
-	const res = await fetch(`${API_BASE}/api/v1/jobs/${jobId}/conversation`);
+	const res = await apiFetch(`/api/v1/jobs/${jobId}/conversation`);
 	if (!res.ok) throw new Error("Failed to fetch conversation");
 	return res.json();
 }
 async function streamGenerateBid(payload, onEvent, signal) {
-	const res = await fetch(`${API_BASE}/api/v1/jobs/generate-bid`, {
+	const res = await apiJsonFetch("/api/v1/jobs/generate-bid", {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(payload),
 		signal
 	});
@@ -688,9 +716,8 @@ async function streamGenerateBid(payload, onEvent, signal) {
 	await consumeStream(res, onEvent);
 }
 async function streamRevision(jobId, bidId, instruction, onEvent, signal) {
-	const res = await fetch(`${API_BASE}/api/v1/jobs/${jobId}/bids/${bidId}/revise`, {
+	const res = await apiJsonFetch(`/api/v1/jobs/${jobId}/bids/${bidId}/revise`, {
 		method: "POST",
-		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({ instruction }),
 		signal
 	});
@@ -1463,7 +1490,7 @@ function groupJobs(jobs) {
 	});
 	return groups;
 }
-function Sidebar({ profiles, activeProfileId, jobs, selectedJobId, onSelectProfile, onSelectJob, onNewBid, onNewProfile, onEditProfile, onOpenProjects, onOpenPrompts }) {
+function Sidebar({ profiles, activeProfileId, jobs, selectedJobId, onSelectProfile, onSelectJob, onNewBid, onNewProfile, onEditProfile, onOpenProjects, onOpenPrompts, onLogout }) {
 	const [profileOpen, setProfileOpen] = (0, import_react.useState)(false);
 	const activeProfile = profiles.find((p) => p.id === activeProfileId);
 	const jobGroups = groupJobs(jobs);
@@ -1590,19 +1617,29 @@ function Sidebar({ profiles, activeProfileId, jobs, selectedJobId, onSelectProfi
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 				className: "space-y-1 border-t border-sidebar-border/80 p-3",
-				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-					variant: "ghost",
-					size: "sm",
-					className: "w-full justify-start gap-2 rounded-xl text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground",
-					onClick: onOpenProjects,
-					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Folder, { className: "h-4 w-4" }), "Reference Projects"]
-				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
-					variant: "ghost",
-					size: "sm",
-					className: "w-full justify-start gap-2 rounded-xl text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground",
-					onClick: onOpenPrompts,
-					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FileText, { className: "h-4 w-4" }), "Prompts"]
-				})]
+				children: [
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
+						variant: "ghost",
+						size: "sm",
+						className: "w-full justify-start gap-2 rounded-xl text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground",
+						onClick: onOpenProjects,
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Folder, { className: "h-4 w-4" }), "Reference Projects"]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
+						variant: "ghost",
+						size: "sm",
+						className: "w-full justify-start gap-2 rounded-xl text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground",
+						onClick: onOpenPrompts,
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(FileText, { className: "h-4 w-4" }), "Prompts"]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
+						variant: "ghost",
+						size: "sm",
+						className: "w-full justify-start gap-2 rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive",
+						onClick: onLogout,
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(LogOut, { className: "h-4 w-4" }), "Logout"]
+					})
+				]
 			})
 		]
 	});
@@ -1626,7 +1663,7 @@ function AuthenticatedChatApp() {
 	}, []);
 	if (!hasCheckedStorage) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "app-canvas min-h-screen" });
 	if (!user) return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(GoogleAuthPage, { onAuthSuccess: setUser });
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChatApp, {});
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChatApp, { onLogout: () => setUser(null) });
 }
 function GoogleAuthPage({ onAuthSuccess }) {
 	const buttonRef = (0, import_react.useRef)(null);
@@ -1801,7 +1838,7 @@ function GoogleAuthPage({ onAuthSuccess }) {
 		})]
 	});
 }
-function ChatApp() {
+function ChatApp({ onLogout }) {
 	const [profiles, setProfiles] = (0, import_react.useState)([]);
 	const [activeProfileId, setActiveProfileId] = (0, import_react.useState)(() => {
 		try {
@@ -1887,6 +1924,15 @@ function ChatApp() {
 		setStreamText("");
 		setStreamingUserMessage("");
 	};
+	const handleLogout = () => {
+		abortRef.current?.abort();
+		try {
+			localStorage.removeItem(STORED_USER_KEY);
+			localStorage.removeItem("activeProfileId");
+			window.google?.accounts.id.disableAutoSelect?.();
+		} catch {}
+		onLogout();
+	};
 	const handleGenerateBid = async (payload) => {
 		abortRef.current?.abort();
 		const ctrl = new AbortController();
@@ -1969,7 +2015,8 @@ function ChatApp() {
 					setProfileModalOpen(true);
 				},
 				onOpenProjects: () => setProjectsModalOpen(true),
-				onOpenPrompts: () => setPromptsModalOpen(true)
+				onOpenPrompts: () => setPromptsModalOpen(true),
+				onLogout: handleLogout
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
 				className: "flex flex-1 flex-col min-w-0 overflow-hidden",

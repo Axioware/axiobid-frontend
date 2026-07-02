@@ -1,10 +1,58 @@
-export const API_BASE: string =
-  import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE ?? "";
+export const API_BASE: string = import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE ?? "";
+
+const STORED_USER_KEY = "google_auth_user";
+
+type StoredGoogleUser = {
+  id?: string;
+};
+
+function currentUserId() {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const value = window.localStorage.getItem(STORED_USER_KEY);
+    if (!value) return null;
+    const user = JSON.parse(value) as StoredGoogleUser;
+    return user.id || null;
+  } catch {
+    return null;
+  }
+}
+
+function authHeaders(headers?: HeadersInit) {
+  const userId = currentUserId();
+  if (!userId) throw new Error("No logged-in user found");
+
+  const nextHeaders = new Headers(headers);
+  nextHeaders.set("X-User-Id", userId);
+  return nextHeaders;
+}
+
+function jsonHeaders(headers?: HeadersInit) {
+  const nextHeaders = authHeaders(headers);
+  nextHeaders.set("Content-Type", "application/json");
+  return nextHeaders;
+}
+
+async function apiFetch(path: string, init: RequestInit = {}) {
+  return fetch(`${API_BASE}${path}`, {
+    ...init,
+    headers: authHeaders(init.headers),
+  });
+}
+
+async function apiJsonFetch(path: string, init: RequestInit = {}) {
+  return fetch(`${API_BASE}${path}`, {
+    ...init,
+    headers: jsonHeaders(init.headers),
+  });
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface Profile {
   id: string;
+  user_id?: string;
   name: string;
   bio?: string;
   skills?: string[];
@@ -14,6 +62,7 @@ export interface Profile {
 
 export interface Project {
   id: string;
+  user_id?: string;
   profile_id: string;
   title: string;
   description: string;
@@ -32,6 +81,7 @@ export interface ClientInfo {
 
 export interface Job {
   id: string;
+  user_id?: string;
   title: string;
   description: string;
   budget?: string;
@@ -43,6 +93,7 @@ export interface Job {
 
 export interface Bid {
   id: string;
+  user_id?: string;
   job_id: string;
   bid_text: string;
   is_manual: boolean;
@@ -78,10 +129,7 @@ export interface GenerateBidPayload {
 
 // ─── Streaming helper ─────────────────────────────────────────────────────────
 
-async function consumeStream(
-  res: Response,
-  onEvent: (e: StreamEvent) => void,
-): Promise<void> {
+async function consumeStream(res: Response, onEvent: (e: StreamEvent) => void): Promise<void> {
   if (!res.body) throw new Error("No response body");
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
@@ -109,7 +157,7 @@ async function consumeStream(
 // ─── Profile APIs ─────────────────────────────────────────────────────────────
 
 export async function fetchProfiles(): Promise<Profile[]> {
-  const res = await fetch(`${API_BASE}/api/v1/profiles`);
+  const res = await apiFetch("/api/v1/profiles");
   if (!res.ok) throw new Error("Failed to fetch profiles");
   return res.json();
 }
@@ -119,9 +167,8 @@ export async function createProfile(data: {
   bio?: string;
   skills?: string[];
 }): Promise<Profile> {
-  const res = await fetch(`${API_BASE}/api/v1/profiles`, {
+  const res = await apiJsonFetch("/api/v1/profiles", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error("Failed to create profile");
@@ -132,9 +179,8 @@ export async function updateProfile(
   id: string,
   data: { name?: string; bio?: string; skills?: string[] },
 ): Promise<Profile> {
-  const res = await fetch(`${API_BASE}/api/v1/profiles/${id}`, {
+  const res = await apiJsonFetch(`/api/v1/profiles/${id}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error("Failed to update profile");
@@ -142,7 +188,7 @@ export async function updateProfile(
 }
 
 export async function deleteProfile(id: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/v1/profiles/${id}`, {
+  const res = await apiFetch(`/api/v1/profiles/${id}`, {
     method: "DELETE",
   });
   if (!res.ok) throw new Error("Failed to delete profile");
@@ -152,6 +198,7 @@ export async function deleteProfile(id: string): Promise<void> {
 
 export interface Prompt {
   id: string;
+  user_id?: string | null;
   type: string;
   prompt: string;
   created_at: string;
@@ -164,9 +211,7 @@ export async function fetchProjects(profileId?: string): Promise<Project[]> {
   const params = new URLSearchParams();
   if (profileId) params.set("profile_id", profileId);
   const query = params.toString();
-  const res = await fetch(
-    `${API_BASE}/api/v1/projects${query ? `?${query}` : ""}`,
-  );
+  const res = await apiFetch(`/api/v1/projects${query ? `?${query}` : ""}`);
   if (!res.ok) throw new Error("Failed to fetch projects");
   return res.json();
 }
@@ -179,9 +224,8 @@ export async function createProject(data: {
   outcome?: string;
   profile_id: string;
 }): Promise<Project> {
-  const res = await fetch(`${API_BASE}/api/v1/projects`, {
+  const res = await apiJsonFetch("/api/v1/projects", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error("Failed to create project");
@@ -199,9 +243,8 @@ export async function updateProject(
     profile_id?: string;
   },
 ): Promise<Project> {
-  const res = await fetch(`${API_BASE}/api/v1/projects/${id}`, {
+  const res = await apiJsonFetch(`/api/v1/projects/${id}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error("Failed to update project");
@@ -209,7 +252,7 @@ export async function updateProject(
 }
 
 export async function deleteProject(id: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/v1/projects/${id}`, {
+  const res = await apiFetch(`/api/v1/projects/${id}`, {
     method: "DELETE",
   });
   if (!res.ok) throw new Error("Failed to delete project");
@@ -218,15 +261,14 @@ export async function deleteProject(id: string): Promise<void> {
 // ─── Prompt APIs ──────────────────────────────────────────────────────────────
 
 export async function fetchPrompts(): Promise<Prompt[]> {
-  const res = await fetch(`${API_BASE}/api/v1/prompts`);
+  const res = await apiFetch("/api/v1/prompts");
   if (!res.ok) throw new Error("Failed to fetch prompts");
   return res.json();
 }
 
 export async function updatePrompt(id: string, prompt: string): Promise<Prompt> {
-  const res = await fetch(`${API_BASE}/api/v1/prompts/${id}`, {
+  const res = await apiJsonFetch(`/api/v1/prompts/${id}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ prompt }),
   });
   if (!res.ok) throw new Error("Failed to update prompt");
@@ -234,9 +276,8 @@ export async function updatePrompt(id: string, prompt: string): Promise<Prompt> 
 }
 
 export async function createPrompt(type: string, prompt: string): Promise<Prompt> {
-  const res = await fetch(`${API_BASE}/api/v1/prompts`, {
+  const res = await apiJsonFetch("/api/v1/prompts", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ type, prompt }),
   });
   if (!res.ok) throw new Error("Failed to create prompt");
@@ -245,21 +286,16 @@ export async function createPrompt(type: string, prompt: string): Promise<Prompt
 
 // ─── Job APIs ─────────────────────────────────────────────────────────────────
 
-export async function fetchJobs(
-  profileId?: string,
-  limit = 50,
-): Promise<Job[]> {
+export async function fetchJobs(profileId?: string, limit = 50): Promise<Job[]> {
   const params = new URLSearchParams({ limit: String(limit) });
   if (profileId) params.set("profile_id", profileId);
-  const res = await fetch(`${API_BASE}/api/v1/jobs?${params}`);
+  const res = await apiFetch(`/api/v1/jobs?${params}`);
   if (!res.ok) throw new Error("Failed to fetch jobs");
   return res.json();
 }
 
-export async function fetchJobConversation(
-  jobId: string,
-): Promise<Conversation> {
-  const res = await fetch(`${API_BASE}/api/v1/jobs/${jobId}/conversation`);
+export async function fetchJobConversation(jobId: string): Promise<Conversation> {
+  const res = await apiFetch(`/api/v1/jobs/${jobId}/conversation`);
   if (!res.ok) throw new Error("Failed to fetch conversation");
   return res.json();
 }
@@ -271,9 +307,8 @@ export async function streamGenerateBid(
   onEvent: (e: StreamEvent) => void,
   signal: AbortSignal,
 ): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/v1/jobs/generate-bid`, {
+  const res = await apiJsonFetch("/api/v1/jobs/generate-bid", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
     signal,
   });
@@ -288,15 +323,11 @@ export async function streamRevision(
   onEvent: (e: StreamEvent) => void,
   signal: AbortSignal,
 ): Promise<void> {
-  const res = await fetch(
-    `${API_BASE}/api/v1/jobs/${jobId}/bids/${bidId}/revise`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ instruction }),
-      signal,
-    },
-  );
+  const res = await apiJsonFetch(`/api/v1/jobs/${jobId}/bids/${bidId}/revise`, {
+    method: "POST",
+    body: JSON.stringify({ instruction }),
+    signal,
+  });
   if (!res.ok || !res.body) throw new Error("Failed to start revision stream");
   await consumeStream(res, onEvent);
 }
