@@ -5,7 +5,7 @@ import { Check, Copy, SendHorizonal, Square, User } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import type { Conversation } from "@/lib/api";
+import type { Conversation, QuestionAnswer } from "@/lib/api";
 
 // ─── Typing indicator ─────────────────────────────────────────────────────────
 
@@ -92,6 +92,26 @@ function AiBubble({ text, isStreaming = false }: { text: string; isStreaming?: b
   );
 }
 
+// ─── Screening questions card ───────────────────────────────────────────────────
+
+function QuestionsCard({ answers }: { answers: QuestionAnswer[] }) {
+  return (
+    <div className="ml-11 space-y-3 rounded-2xl border border-border/60 bg-card/35 px-4 py-3">
+      <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground/70">
+        Client Questions
+      </p>
+      <div className="space-y-3">
+        {answers.map((qa, i) => (
+          <div key={i} className="space-y-1">
+            <p className="text-sm font-medium text-foreground/90">{qa.question}</p>
+            <p className="text-sm leading-relaxed text-muted-foreground">{qa.answer}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── ChatView ─────────────────────────────────────────────────────────────────
 
 interface ChatViewProps {
@@ -160,6 +180,9 @@ export function ChatView({
                   <div key={i} className="space-y-4">
                     <UserBubble text={userText} />
                     <AiBubble text={msg.bid.bid_text} />
+                    {msg.bid.answers && msg.bid.answers.length > 0 && (
+                      <QuestionsCard answers={msg.bid.answers} />
+                    )}
                   </div>
                 );
               })}

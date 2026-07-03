@@ -7,6 +7,7 @@ import { NewBidForm } from "@/components/new-bid-form";
 import { ProfileModal } from "@/components/profile-modal";
 import { ProjectsModal } from "@/components/projects-modal";
 import { PromptsModal } from "@/components/prompts-modal";
+import { SettingsModal } from "@/components/settings-modal";
 import { Sidebar } from "@/components/sidebar";
 import {
   fetchJobConversation,
@@ -316,6 +317,14 @@ function ChatApp({ onLogout }: { onLogout: () => void }) {
   const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
   const [projectsModalOpen, setProjectsModalOpen] = useState(false);
   const [promptsModalOpen, setPromptsModalOpen] = useState(false);
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+  const [showAllProfiles, setShowAllProfiles] = useState(() => {
+    try {
+      return localStorage.getItem("showAllProfiles") === "true";
+    } catch {
+      return false;
+    }
+  });
 
   const abortRef = useRef<AbortController | null>(null);
 
@@ -328,6 +337,14 @@ function ChatApp({ onLogout }: { onLogout: () => void }) {
       /* ignore */
     }
   }, [activeProfileId]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("showAllProfiles", String(showAllProfiles));
+    } catch {
+      /* ignore */
+    }
+  }, [showAllProfiles]);
 
   // ── Data loading ───────────────────────────────────────────────────────────
   useEffect(() => {
@@ -346,11 +363,11 @@ function ChatApp({ onLogout }: { onLogout: () => void }) {
   }, []);
 
   useEffect(() => {
-    if (!activeProfileId) return;
-    fetchJobs(activeProfileId)
+    if (!showAllProfiles && !activeProfileId) return;
+    fetchJobs(showAllProfiles ? undefined : (activeProfileId ?? undefined))
       .then(setJobs)
       .catch(() => toast.error("Failed to load jobs"));
-  }, [activeProfileId]);
+  }, [activeProfileId, showAllProfiles]);
 
   // ── Helpers ────────────────────────────────────────────────────────────────
   const loadConversation = async (jobId: string) => {
@@ -366,9 +383,9 @@ function ChatApp({ onLogout }: { onLogout: () => void }) {
   };
 
   const reloadJobs = async () => {
-    if (!activeProfileId) return;
+    if (!showAllProfiles && !activeProfileId) return;
     try {
-      const data = await fetchJobs(activeProfileId);
+      const data = await fetchJobs(showAllProfiles ? undefined : (activeProfileId ?? undefined));
       setJobs(data);
     } catch {
       /* silent */
@@ -537,6 +554,7 @@ function ChatApp({ onLogout }: { onLogout: () => void }) {
         }}
         onOpenProjects={() => setProjectsModalOpen(true)}
         onOpenPrompts={() => setPromptsModalOpen(true)}
+        onOpenSettings={() => setSettingsModalOpen(true)}
         onLogout={handleLogout}
       />
 
@@ -591,6 +609,13 @@ function ChatApp({ onLogout }: { onLogout: () => void }) {
       />
 
       <PromptsModal open={promptsModalOpen} onClose={() => setPromptsModalOpen(false)} />
+
+      <SettingsModal
+        open={settingsModalOpen}
+        onClose={() => setSettingsModalOpen(false)}
+        showAllProfiles={showAllProfiles}
+        onToggleShowAllProfiles={setShowAllProfiles}
+      />
     </div>
   );
 }

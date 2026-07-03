@@ -7,6 +7,7 @@ import {
   MessageSquarePlus,
   Pencil,
   Plus,
+  Settings,
   Sparkles,
   UserCircle,
 } from "lucide-react";
@@ -27,6 +28,7 @@ interface SidebarProps {
   onEditProfile: (profile: Profile) => void;
   onOpenProjects: () => void;
   onOpenPrompts: () => void;
+  onOpenSettings: () => void;
   onLogout: () => void;
 }
 
@@ -63,6 +65,7 @@ export function Sidebar({
   onEditProfile,
   onOpenProjects,
   onOpenPrompts,
+  onOpenSettings,
   onLogout,
 }: SidebarProps) {
   const [profileOpen, setProfileOpen] = useState(false);
@@ -211,6 +214,15 @@ export function Sidebar({
         >
           <FileText className="h-4 w-4" />
           Prompts
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full justify-start gap-2 rounded-xl text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground"
+          onClick={onOpenSettings}
+        >
+          <Settings className="h-4 w-4" />
+          Settings
         </Button>
         <Button
           variant="ghost"

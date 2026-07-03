@@ -1,10 +1,9 @@
 import { useState } from "react";
-import { ChevronDown, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { TagInput } from "./tag-input";
 import type { GenerateBidPayload, Profile } from "@/lib/api";
 
@@ -20,15 +19,18 @@ const empty = {
   description: "",
   budget: "",
   skills: [] as string[],
-  country: "",
-  hireRate: "",
-  reviews: "",
-  totalSpent: "",
+  questions: "",
 };
+
+function parseQuestions(raw: string): string[] {
+  return raw
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
 
 export function NewBidForm({ activeProfileId, onSubmit, isSubmitting }: NewBidFormProps) {
   const [form, setForm] = useState(empty);
-  const [clientOpen, setClientOpen] = useState(false);
 
   const set = (patch: Partial<typeof empty>) => setForm((prev) => ({ ...prev, ...patch }));
 
@@ -36,21 +38,14 @@ export function NewBidForm({ activeProfileId, onSubmit, isSubmitting }: NewBidFo
     e.preventDefault();
     if (!form.title.trim() || !form.description.trim()) return;
 
-    const hasClient = form.country || form.hireRate || form.reviews || form.totalSpent;
+    const questions = parseQuestions(form.questions);
 
     onSubmit({
       title: form.title.trim(),
       description: form.description.trim(),
       budget: form.budget.trim() || undefined,
       skills: form.skills,
-      client_info: hasClient
-        ? {
-            country: form.country.trim() || undefined,
-            hire_rate: form.hireRate.trim() || undefined,
-            reviews: form.reviews ? parseFloat(form.reviews) : undefined,
-            total_spent: form.totalSpent.trim() || undefined,
-          }
-        : undefined,
+      questions: questions.length > 0 ? questions : undefined,
       profile_id: activeProfileId ?? undefined,
     });
   };
@@ -122,62 +117,24 @@ export function NewBidForm({ activeProfileId, onSubmit, isSubmitting }: NewBidFo
             </div>
           </div>
 
-          {/* Client Info accordion */}
-          <Collapsible open={clientOpen} onOpenChange={setClientOpen}>
-            <CollapsibleTrigger className="flex w-full items-center justify-between rounded-xl border border-border bg-card/45 px-4 py-3 text-sm font-medium transition-colors hover:bg-card/70">
-              <span className="text-muted-foreground">
-                Client Info <span className="font-normal text-muted-foreground/60">(optional)</span>
-              </span>
-              <ChevronDown
-                className={`h-4 w-4 text-muted-foreground transition-transform ${clientOpen ? "rotate-180" : ""}`}
-              />
-            </CollapsibleTrigger>
-            <CollapsibleContent className="grid gap-3 pt-3 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="country">Country</Label>
-                <Input
-                  id="country"
-                  maxLength={100}
-                  value={form.country}
-                  onChange={(e) => set({ country: e.target.value })}
-                  placeholder="United States"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="hire-rate">Hire Rate</Label>
-                <Input
-                  id="hire-rate"
-                  maxLength={20}
-                  value={form.hireRate}
-                  onChange={(e) => set({ hireRate: e.target.value })}
-                  placeholder="85%"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="reviews">Reviews</Label>
-                <Input
-                  id="reviews"
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  max="5"
-                  value={form.reviews}
-                  onChange={(e) => set({ reviews: e.target.value })}
-                  placeholder="4.8"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="total-spent">Total Spent</Label>
-                <Input
-                  id="total-spent"
-                  maxLength={50}
-                  value={form.totalSpent}
-                  onChange={(e) => set({ totalSpent: e.target.value })}
-                  placeholder="$12,000"
-                />
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
+          {/* Screening questions */}
+          <div className="space-y-1.5">
+            <Label htmlFor="questions">
+              Screening Questions <span className="font-normal text-muted-foreground/60">(optional)</span>
+            </Label>
+            <Textarea
+              id="questions"
+              rows={4}
+              maxLength={4000}
+              value={form.questions}
+              onChange={(e) => set({ questions: e.target.value })}
+              placeholder={"Paste each question the client asked on its own line...\ne.g.\nHow many years of React experience do you have?\nCan you start immediately?"}
+              className="resize-none"
+            />
+            <p className="text-xs text-muted-foreground/60">
+              One question per line. We&apos;ll generate an answer for each alongside your bid.
+            </p>
+          </div>
 
           <div className="flex justify-end pt-2">
             <Button

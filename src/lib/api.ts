@@ -72,11 +72,9 @@ export interface Project {
   created_at: string;
 }
 
-export interface ClientInfo {
-  country?: string;
-  hire_rate?: string;
-  reviews?: number | null;
-  total_spent?: string;
+export interface QuestionAnswer {
+  question: string;
+  answer: string;
 }
 
 export interface Job {
@@ -86,7 +84,7 @@ export interface Job {
   description: string;
   budget?: string;
   skills: string[];
-  client_info?: ClientInfo;
+  questions?: string[];
   profile_id?: string;
   created_at: string;
 }
@@ -97,6 +95,7 @@ export interface Bid {
   job_id: string;
   bid_text: string;
   is_manual: boolean;
+  answers?: QuestionAnswer[];
   created_at: string;
 }
 
@@ -116,6 +115,7 @@ export interface StreamEvent {
   content?: string;
   bid_id?: string;
   job_id?: string;
+  answers?: QuestionAnswer[];
 }
 
 export interface GenerateBidPayload {
@@ -123,7 +123,7 @@ export interface GenerateBidPayload {
   description: string;
   budget?: string;
   skills?: string[];
-  client_info?: ClientInfo;
+  questions?: string[];
   profile_id?: string;
 }
 
