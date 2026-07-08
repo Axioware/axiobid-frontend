@@ -22,7 +22,7 @@ export function SettingsModal({
           <DialogTitle>Settings</DialogTitle>
         </DialogHeader>
 
-        <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-card/40 px-4 py-3">
+        <div className="flex items-center justify-between gap-4 rounded-md border border-border bg-card/40 px-4 py-3">
           <div className="min-w-0">
             <Label htmlFor="show-all-profiles" className="text-sm font-medium">
               Show chats from all profiles

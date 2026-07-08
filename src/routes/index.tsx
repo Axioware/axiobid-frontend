@@ -9,6 +9,7 @@ import { ProjectsModal } from "@/components/projects-modal";
 import { PromptsModal } from "@/components/prompts-modal";
 import { SettingsModal } from "@/components/settings-modal";
 import { Sidebar } from "@/components/sidebar";
+import { ThemeToggle } from "@/components/theme-toggle";
 import {
   fetchJobConversation,
   fetchJobs,
@@ -223,45 +224,45 @@ function GoogleAuthPage({ onAuthSuccess }: { onAuthSuccess: (user: GoogleUser) =
   return (
     <main className="app-canvas relative isolate flex min-h-screen items-center justify-center overflow-hidden px-4 py-8">
       <div className="ambient-grid" />
-      <div className="relative z-10 grid w-full max-w-5xl overflow-hidden rounded-3xl border border-border/60 bg-background/80 shadow-2xl shadow-black/30 lg:grid-cols-[1.1fr_0.9fr]">
-        <section className="relative hidden min-h-[36rem] overflow-hidden border-r border-border/60 p-8 lg:block">
+      <ThemeToggle className="absolute right-5 top-5 z-20 border-border bg-card/60" />
+      <div className="relative z-10 grid w-full max-w-5xl overflow-hidden rounded-lg border border-border bg-background/95 lg:grid-cols-[1.1fr_0.9fr]">
+        <section className="relative hidden min-h-[36rem] flex-col justify-between overflow-hidden border-r border-border p-10 lg:flex">
           <div className="auth-orbit" />
-          <div className="auth-float glass-panel absolute left-8 top-10 w-64 rounded-2xl p-4">
-            <p className="text-xs font-medium uppercase tracking-[0.24em] text-primary">BidCraft</p>
-            <p className="mt-2 text-2xl font-semibold leading-tight">
-              Turn job posts into sharp proposals.
+          <div className="relative z-10">
+            <div className="flex h-11 w-11 items-center justify-center rounded-md border border-primary/30 bg-primary text-primary-foreground">
+              <span className="font-serif text-lg font-semibold leading-none">B</span>
+            </div>
+          </div>
+
+          <div className="relative z-10 max-w-sm">
+            <p className="mb-3 font-serif text-sm italic text-primary">Est. for freelancers</p>
+            <h2 className="font-serif text-[2.35rem] font-semibold leading-[1.08] tracking-tight">
+              Turn job posts into proposals clients actually read.
+            </h2>
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+              BidCraft studies your profile and past work, then drafts a bid pitched exactly at
+              the job in front of you — ready to revise line by line.
             </p>
           </div>
-          <div className="auth-float glass-panel absolute bottom-14 left-12 w-56 rounded-2xl p-4">
-            <div className="mb-3 h-2 w-20 rounded-full bg-primary/70" />
-            <div className="space-y-2">
-              <div className="h-2 rounded-full bg-foreground/20" />
-              <div className="h-2 w-10/12 rounded-full bg-foreground/14" />
-              <div className="h-2 w-7/12 rounded-full bg-foreground/10" />
-            </div>
-          </div>
-          <div className="auth-float glass-panel absolute bottom-24 right-10 w-52 rounded-2xl p-4">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-xl bg-linear-to-br from-primary to-[var(--primary-glow)]" />
-              <div className="min-w-0 flex-1 space-y-1.5">
-                <div className="h-2 rounded-full bg-foreground/20" />
-                <div className="h-2 w-3/5 rounded-full bg-foreground/12" />
-              </div>
-            </div>
+
+          <div className="relative z-10 flex items-center gap-6 border-t border-border pt-6 text-xs uppercase tracking-[0.16em] text-muted-foreground">
+            <span>Profiles</span>
+            <span className="h-3 w-px bg-border" />
+            <span>Reference Projects</span>
+            <span className="h-3 w-px bg-border" />
+            <span>Revisions</span>
           </div>
         </section>
 
         <section className="flex min-h-[34rem] flex-col justify-center px-6 py-10 sm:px-10">
           <div className="mx-auto w-full max-w-sm">
             <div className="mb-8">
-              <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br from-primary to-[var(--primary-glow)] text-xl font-bold text-primary-foreground shadow-xl shadow-primary/20">
-                B
+              <div className="mb-6 flex h-11 w-11 items-center justify-center rounded-md border border-primary/30 bg-primary text-primary-foreground lg:hidden">
+                <span className="font-serif text-lg font-semibold leading-none">B</span>
               </div>
-              <p className="mb-2 text-sm font-medium uppercase tracking-[0.22em] text-primary">
-                Welcome Back
-              </p>
-              <h1 className="text-3xl font-semibold tracking-tight">
-                Sign in to your bid workspace
+              <p className="mb-2 font-serif text-sm italic text-primary">Welcome back</p>
+              <h1 className="font-serif text-3xl font-semibold tracking-tight">
+                Sign in to your workspace
               </h1>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                 Continue with Google to access your profiles, reference projects, prompts, and bid
@@ -269,7 +270,7 @@ function GoogleAuthPage({ onAuthSuccess }: { onAuthSuccess: (user: GoogleUser) =
               </p>
             </div>
 
-            <div className="glass-panel rounded-2xl p-5">
+            <div className="glass-panel rounded-md p-5">
               <div ref={buttonRef} aria-label="Sign in with Google" />
               {isSubmitting ? (
                 <p className="mt-4 text-sm text-muted-foreground">Signing in...</p>

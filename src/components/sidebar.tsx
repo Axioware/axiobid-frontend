@@ -8,12 +8,12 @@ import {
   Pencil,
   Plus,
   Settings,
-  Sparkles,
   UserCircle,
 } from "lucide-react";
 import { formatDistanceToNow, isToday, isYesterday, subDays } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ThemeToggle } from "@/components/theme-toggle";
 import type { Job, Profile } from "@/lib/api";
 
 interface SidebarProps {
@@ -74,24 +74,29 @@ export function Sidebar({
   const jobGroups = groupJobs(jobs);
 
   return (
-    <aside className="flex w-72 shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar/95 shadow-2xl shadow-black/25">
-      <div className="border-b border-sidebar-border/80 px-4 py-4">
+    <aside className="flex w-72 shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar">
+      <div className="border-b border-sidebar-border px-4 py-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-linear-to-br from-primary to-[var(--primary-glow)] text-primary-foreground shadow-lg shadow-primary/20">
-            <Sparkles className="h-4 w-4" />
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-primary/30 bg-primary text-primary-foreground shadow-[inset_0_1px_0_0_oklch(1_0_0/0.25)]">
+            <span className="font-serif text-base font-semibold leading-none">B</span>
           </div>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-sidebar-foreground">BidCraft</p>
-            <p className="truncate text-xs text-muted-foreground">AI bid workspace</p>
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-serif text-[15px] font-semibold tracking-tight text-sidebar-foreground">
+              BidCraft
+            </p>
+            <p className="truncate text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+              Proposal Desk
+            </p>
           </div>
+          <ThemeToggle />
         </div>
       </div>
 
       {/* Profile selector */}
-      <div className="border-b border-sidebar-border/80 p-3">
+      <div className="border-b border-sidebar-border p-3">
         <Popover open={profileOpen} onOpenChange={setProfileOpen}>
           <PopoverTrigger asChild>
-            <button className="flex w-full items-center gap-2 rounded-xl border border-sidebar-border/80 bg-sidebar-accent/30 px-3 py-2.5 text-sm font-medium text-sidebar-foreground shadow-sm transition-all hover:border-sidebar-ring/50 hover:bg-sidebar-accent">
+            <button className="flex w-full items-center gap-2 rounded-md border border-sidebar-border bg-sidebar-accent/25 px-3 py-2.5 text-sm font-medium text-sidebar-foreground transition-colors hover:border-sidebar-ring/40 hover:bg-sidebar-accent">
               <UserCircle className="h-5 w-5 shrink-0 text-primary" />
               <span className="flex-1 truncate text-left">
                 {activeProfile?.name ?? "Select profile"}
@@ -99,7 +104,7 @@ export function Sidebar({
               <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
             </button>
           </PopoverTrigger>
-          <PopoverContent className="glass-panel w-64 rounded-xl p-1.5" side="bottom" align="start">
+          <PopoverContent className="glass-panel w-64 rounded-md p-1.5" side="bottom" align="start">
             {profiles.map((p) => (
               <div key={p.id} className="flex items-center gap-1 rounded-lg hover:bg-accent">
                 <button
@@ -154,7 +159,7 @@ export function Sidebar({
       {/* Job list */}
       <div className="soft-scrollbar flex-1 space-y-5 overflow-y-auto px-3 py-4">
         {jobGroups.length === 0 ? (
-          <div className="rounded-2xl border border-sidebar-border/80 bg-sidebar-accent/20 px-4 py-6 text-center">
+          <div className="rounded-md border border-dashed border-sidebar-border px-4 py-6 text-center">
             <p className="text-sm font-medium text-sidebar-foreground">No bids yet</p>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
               Start a new bid and your conversations will collect here.
@@ -163,20 +168,20 @@ export function Sidebar({
         ) : (
           jobGroups.map((group) => (
             <div key={group.label}>
-              <p className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <p className="mb-2 px-2 font-serif text-[11px] font-medium italic tracking-wide text-muted-foreground/80">
                 {group.label}
               </p>
-              <ul className="space-y-1">
+              <ul className="space-y-0.5">
                 {group.jobs.map((job) => {
                   const active = job.id === selectedJobId;
                   return (
                     <li key={job.id}>
                       <button
                         onClick={() => onSelectJob(job.id)}
-                        className={`w-full rounded-xl border px-3 py-2.5 text-left transition-all ${
+                        className={`w-full border-l-2 px-3 py-2.5 text-left transition-colors ${
                           active
-                            ? "border-sidebar-ring/50 bg-sidebar-accent text-sidebar-foreground shadow-lg shadow-primary/5"
-                            : "border-transparent text-sidebar-foreground/75 hover:border-sidebar-border hover:bg-sidebar-accent/55 hover:text-sidebar-foreground"
+                            ? "border-primary bg-sidebar-accent text-sidebar-foreground"
+                            : "border-transparent text-sidebar-foreground/70 hover:border-sidebar-border hover:bg-sidebar-accent/45 hover:text-sidebar-foreground"
                         }`}
                       >
                         <p className="truncate text-sm leading-snug">{job.title}</p>
@@ -196,11 +201,11 @@ export function Sidebar({
       </div>
 
       {/* Bottom actions */}
-      <div className="space-y-1 border-t border-sidebar-border/80 p-3">
+      <div className="space-y-1 border-t border-sidebar-border p-3">
         <Button
           variant="ghost"
           size="sm"
-          className="w-full justify-start gap-2 rounded-xl text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground"
+          className="w-full justify-start gap-2 text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground"
           onClick={onOpenProjects}
         >
           <Folder className="h-4 w-4" />
@@ -209,7 +214,7 @@ export function Sidebar({
         <Button
           variant="ghost"
           size="sm"
-          className="w-full justify-start gap-2 rounded-xl text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground"
+          className="w-full justify-start gap-2 text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground"
           onClick={onOpenPrompts}
         >
           <FileText className="h-4 w-4" />
@@ -218,7 +223,7 @@ export function Sidebar({
         <Button
           variant="ghost"
           size="sm"
-          className="w-full justify-start gap-2 rounded-xl text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground"
+          className="w-full justify-start gap-2 text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground"
           onClick={onOpenSettings}
         >
           <Settings className="h-4 w-4" />
@@ -227,7 +232,7 @@ export function Sidebar({
         <Button
           variant="ghost"
           size="sm"
-          className="w-full justify-start gap-2 rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+          className="w-full justify-start gap-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
           onClick={onLogout}
         >
           <LogOut className="h-4 w-4" />

@@ -55,17 +55,17 @@ export function NewBidForm({ activeProfileId, onSubmit, isSubmitting }: NewBidFo
       <div className="w-full max-w-3xl space-y-8">
         {/* Header */}
         <div className="text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br from-primary to-[var(--primary-glow)] text-primary-foreground shadow-xl shadow-primary/20">
-            <Sparkles className="h-6 w-6 text-primary-foreground" />
-          </div>
-          <h1 className="text-3xl font-semibold tracking-tight">Generate a Bid</h1>
-          <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
-            Paste an Upwork job and get a tailored bid in seconds.
+          <p className="mb-3 font-serif text-xs italic tracking-wide text-primary">
+            New Proposal
+          </p>
+          <h1 className="font-serif text-4xl font-semibold tracking-tight">Draft a winning bid</h1>
+          <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
+            Paste an Upwork job below and BidCraft will write a tailored proposal in seconds.
           </p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="glass-panel space-y-5 rounded-2xl p-5 sm:p-6">
+        <form onSubmit={handleSubmit} className="glass-panel space-y-5 rounded-md p-5 sm:p-6">
           <div className="space-y-1.5">
             <Label htmlFor="jt">
               Job Title <span className="text-destructive">*</span>

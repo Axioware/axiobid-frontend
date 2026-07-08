@@ -46,35 +46,35 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
-// ─── User bubble ──────────────────────────────────────────────────────────────
+// ─── User instruction line ──────────────────────────────────────────────────────
 
 function UserBubble({ text }: { text: string }) {
   return (
     <div className="flex justify-end gap-3">
-      <div className="max-w-[80%] rounded-2xl rounded-tr-md border border-primary/20 bg-linear-to-br from-primary/20 to-accent/30 px-4 py-3 shadow-lg shadow-black/10">
-        <p className="text-sm text-foreground/90 whitespace-pre-wrap">{text}</p>
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-secondary">
+        <User className="h-4 w-4 text-muted-foreground" />
       </div>
-      <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/15 ring-1 ring-primary/25">
-        <User className="h-4 w-4 text-primary" />
+      <div className="max-w-[80%] border-r-2 border-primary bg-secondary/40 px-4 py-2.5 text-right">
+        <p className="text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap">{text}</p>
       </div>
     </div>
   );
 }
 
-// ─── AI bubble ────────────────────────────────────────────────────────────────
+// ─── AI manuscript panel ─────────────────────────────────────────────────────────
 
 function AiBubble({ text, isStreaming = false }: { text: string; isStreaming?: boolean }) {
   return (
     <div className="flex gap-3 group">
-      <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-primary to-[var(--primary-glow)] text-xs font-bold text-primary-foreground shadow-lg shadow-primary/10">
-        AI
+      <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-primary/30 bg-primary/15 font-serif text-xs font-semibold text-primary">
+        B
       </div>
       <div className="min-w-0 flex-1">
         {isStreaming && !text ? (
           <TypingDots />
         ) : (
           <>
-            <div className="prose prose-sm prose-invert max-w-none rounded-2xl border border-border/70 bg-card/55 px-4 py-3 text-foreground/90 shadow-lg shadow-black/10 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+            <div className="prose prose-sm prose-invert max-w-none border-l-2 border-border bg-card/40 px-4 py-3.5 text-foreground/90 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
               {isStreaming && (
                 <span className="cursor-blink ml-0.5 inline-block h-4 w-[2px] translate-y-[2px] bg-primary align-middle" />
@@ -96,8 +96,8 @@ function AiBubble({ text, isStreaming = false }: { text: string; isStreaming?: b
 
 function QuestionsCard({ answers }: { answers: QuestionAnswer[] }) {
   return (
-    <div className="ml-11 space-y-3 rounded-2xl border border-border/60 bg-card/35 px-4 py-3">
-      <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground/70">
+    <div className="ml-11 space-y-3 border-l-2 border-dashed border-border bg-transparent px-4 py-3">
+      <p className="font-serif text-[11px] italic tracking-wide text-muted-foreground/80">
         Client Questions
       </p>
       <div className="space-y-3">
@@ -201,9 +201,9 @@ export function ChatView({
       </div>
 
       {/* Revision input */}
-      <div className="border-t border-border/70 bg-background/90 px-4 py-3">
+      <div className="border-t border-border bg-background px-4 py-3">
         <div className="mx-auto max-w-3xl">
-          <div className="flex items-end gap-2 rounded-2xl border border-border/80 bg-card/70 px-3 py-2 shadow-2xl shadow-black/15 transition-all focus-within:border-ring focus-within:ring-1 focus-within:ring-ring">
+          <div className="flex items-end gap-2 rounded-md border border-border bg-card/50 px-3 py-2 transition-colors focus-within:border-ring focus-within:ring-1 focus-within:ring-ring">
             <Textarea
               ref={textareaRef}
               value={instruction}
