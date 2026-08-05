@@ -352,13 +352,11 @@ function ChatApp({ onLogout }: { onLogout: () => void }) {
     fetchProfiles()
       .then((data) => {
         setProfiles(data);
-        // If stored profile no longer exists, fallback to first
-        if (data.length > 0) {
-          setActiveProfileId((prev) => {
-            if (prev && data.find((p) => p.id === prev)) return prev;
-            return data[0].id;
-          });
-        }
+        // If stored profile no longer exists (e.g. a different account signed in), fall back
+        setActiveProfileId((prev) => {
+          if (prev && data.find((p) => p.id === prev)) return prev;
+          return data.length > 0 ? data[0].id : null;
+        });
       })
       .catch(() => toast.error("Failed to load profiles"));
   }, []);
