@@ -20,7 +20,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { TagInput } from "./tag-input";
-import { createProject, type Profile } from "@/lib/api";
+import { ProjectLinksEditor } from "./project-links-editor";
+import { createProject, type ProjectLinkInput, type Profile } from "@/lib/api";
 
 interface AddProjectModalProps {
   open: boolean;
@@ -40,8 +41,9 @@ export function AddProjectModal({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [skills, setSkills] = useState<string[]>([]);
-  const [techStack, setTechStack] = useState<string[]>([]);
+  const [techStack, setTechStack] = useState("");
   const [outcome, setOutcome] = useState("");
+  const [links, setLinks] = useState<ProjectLinkInput[]>([]);
   const [profileId, setProfileId] = useState<string>("");
   const [saving, setSaving] = useState(false);
 
@@ -50,8 +52,9 @@ export function AddProjectModal({
       setTitle("");
       setDescription("");
       setSkills([]);
-      setTechStack([]);
+      setTechStack("");
       setOutcome("");
+      setLinks([]);
       setProfileId(activeProfileId ?? profiles[0]?.id ?? "");
     }
   }, [open, activeProfileId, profiles]);
@@ -75,8 +78,11 @@ export function AddProjectModal({
         title: title.trim(),
         description: description.trim(),
         skills,
-        tech_stack: techStack,
+        tech_stack: techStack.trim() || undefined,
         outcome: outcome.trim() || undefined,
+        links: links
+          .filter((link) => link.url.trim())
+          .map((link) => ({ ...link, url: link.url.trim() })),
         profile_id: profileId,
       });
       toast.success("Reference project added");
@@ -136,14 +142,18 @@ export function AddProjectModal({
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Tech Stack</Label>
-              <TagInput
+              <Label htmlFor="proj-tech-stack">Tech Stack</Label>
+              <Input
+                id="proj-tech-stack"
                 value={techStack}
-                onChange={setTechStack}
-                placeholder="React, FastAPI..."
+                maxLength={500}
+                onChange={(e) => setTechStack(e.target.value)}
+                placeholder="React, FastAPI, PostgreSQL"
               />
             </div>
           </div>
+
+          <ProjectLinksEditor value={links} onChange={setLinks} />
 
           <div className="space-y-1.5">
             <Label htmlFor="proj-outcome">Outcome</Label>

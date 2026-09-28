@@ -60,6 +60,17 @@ export interface Profile {
   updated_at: string;
 }
 
+export type ProjectLinkType = "screenshot" | "live" | "loom";
+
+export interface ProjectLink {
+  id: string;
+  link_type: ProjectLinkType;
+  url: string;
+  created_at: string;
+}
+
+export type ProjectLinkInput = Pick<ProjectLink, "link_type" | "url">;
+
 export interface Project {
   id: string;
   user_id?: string;
@@ -67,8 +78,9 @@ export interface Project {
   title: string;
   description: string;
   skills?: string[];
-  tech_stack?: string[];
+  tech_stack?: string;
   outcome?: string;
+  links: ProjectLink[];
   created_at: string;
 }
 
@@ -220,8 +232,9 @@ export async function createProject(data: {
   title: string;
   description: string;
   skills?: string[];
-  tech_stack?: string[];
+  tech_stack?: string;
   outcome?: string;
+  links?: ProjectLinkInput[];
   profile_id: string;
 }): Promise<Project> {
   const res = await apiJsonFetch("/api/v1/projects", {
@@ -238,8 +251,9 @@ export async function updateProject(
     title?: string;
     description?: string;
     skills?: string[];
-    tech_stack?: string[];
+    tech_stack?: string;
     outcome?: string;
+    links?: ProjectLinkInput[];
     profile_id?: string;
   },
 ): Promise<Project> {

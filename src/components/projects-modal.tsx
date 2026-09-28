@@ -29,12 +29,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { TagInput } from "./tag-input";
+import { ProjectLinksEditor } from "./project-links-editor";
 import {
   fetchProjects,
   createProject,
   updateProject,
   deleteProject,
   type Project,
+  type ProjectLinkInput,
+  type ProjectLinkType,
   type Profile,
 } from "@/lib/api";
 
@@ -51,8 +54,9 @@ interface FormState {
   title: string;
   description: string;
   skills: string[];
-  techStack: string[];
+  techStack: string;
   outcome: string;
+  links: ProjectLinkInput[];
   profileId: string;
 }
 
@@ -61,8 +65,9 @@ function emptyForm(defaultProfileId: string): FormState {
     title: "",
     description: "",
     skills: [],
-    techStack: [],
+    techStack: "",
     outcome: "",
+    links: [],
     profileId: defaultProfileId,
   };
 }
@@ -72,11 +77,24 @@ function formFromProject(p: Project): FormState {
     title: p.title,
     description: p.description,
     skills: p.skills ?? [],
-    techStack: p.tech_stack ?? [],
+    techStack: p.tech_stack ?? "",
     outcome: p.outcome ?? "",
+    links: (p.links ?? []).map(({ link_type, url }) => ({ link_type, url })),
     profileId: p.profile_id,
   };
 }
+
+function projectLinksPayload(links: ProjectLinkInput[]): ProjectLinkInput[] {
+  return links
+    .filter((link) => link.url.trim())
+    .map((link) => ({ ...link, url: link.url.trim() }));
+}
+
+const linkTypeLabels: Record<ProjectLinkType, string> = {
+  screenshot: "Screenshot",
+  live: "Live site",
+  loom: "Loom",
+};
 
 export function ProjectsModal({
   open,
@@ -143,8 +161,9 @@ export function ProjectsModal({
           title: form.title.trim(),
           description: form.description.trim(),
           skills: form.skills,
-          tech_stack: form.techStack,
+          tech_stack: form.techStack.trim() || undefined,
           outcome: form.outcome.trim() || undefined,
+          links: projectLinksPayload(form.links),
           profile_id: form.profileId,
         });
         setProjects((prev) => [created, ...prev]);
@@ -154,8 +173,9 @@ export function ProjectsModal({
           title: form.title.trim(),
           description: form.description.trim(),
           skills: form.skills,
-          tech_stack: form.techStack,
+          tech_stack: form.techStack.trim(),
           outcome: form.outcome.trim() || undefined,
+          links: projectLinksPayload(form.links),
           profile_id: form.profileId,
         });
         setProjects((prev) =>
@@ -280,15 +300,36 @@ export function ProjectsModal({
                           <p className="mt-1 text-xs text-muted-foreground line-clamp-2 leading-relaxed">
                             {project.description}
                           </p>
-                          {(project.skills?.length || project.tech_stack?.length) ? (
+                          {project.skills?.length ? (
                             <div className="flex flex-wrap gap-1 mt-2">
-                              {[...(project.skills ?? []), ...(project.tech_stack ?? [])].slice(0, 6).map((tag) => (
+                              {project.skills.slice(0, 6).map((tag) => (
                                 <span
                                   key={tag}
                                   className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground"
                                 >
                                   {tag}
                                 </span>
+                              ))}
+                            </div>
+                          ) : null}
+                          {project.tech_stack && (
+                            <p className="mt-2 text-xs text-muted-foreground">
+                              <span className="font-medium text-foreground/80">Tech stack:</span>{" "}
+                              {project.tech_stack}
+                            </p>
+                          )}
+                          {project.links?.length ? (
+                            <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+                              {project.links.map((link) => (
+                                <a
+                                  key={link.id}
+                                  href={link.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-xs text-primary underline-offset-4 hover:underline"
+                                >
+                                  {linkTypeLabels[link.link_type]}
+                                </a>
                               ))}
                             </div>
                           ) : null}
@@ -357,14 +398,21 @@ export function ProjectsModal({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Tech Stack</Label>
-                  <TagInput
+                  <Label htmlFor="proj-tech-stack">Tech Stack</Label>
+                  <Input
+                    id="proj-tech-stack"
                     value={form.techStack}
-                    onChange={(v) => setForm((f) => ({ ...f, techStack: v }))}
-                    placeholder="React, FastAPI..."
+                    maxLength={500}
+                    onChange={(e) => setForm((f) => ({ ...f, techStack: e.target.value }))}
+                    placeholder="React, FastAPI, PostgreSQL"
                   />
                 </div>
               </div>
+
+              <ProjectLinksEditor
+                value={form.links}
+                onChange={(links) => setForm((f) => ({ ...f, links }))}
+              />
 
               <div className="space-y-1.5">
                 <Label htmlFor="proj-outcome">Outcome</Label>
