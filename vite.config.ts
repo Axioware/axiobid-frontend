@@ -17,5 +17,5 @@ export default defineConfig({
   },
   // Enables the nitro deploy adapter for non-sandbox builds.
   // Lovable's sandbox ignores this and forces cloudflare-module automatically.
-  nitro: { preset: "vercel" },
+  nitro: { preset: "vercel", noExternals: ["tslib"] },
 });
