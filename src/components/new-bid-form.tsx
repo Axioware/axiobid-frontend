@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,8 +10,10 @@ import type { GenerateBidPayload, Profile } from "@/lib/api";
 interface NewBidFormProps {
   profiles: Profile[];
   activeProfileId: string | null;
-  onSubmit: (payload: GenerateBidPayload) => void;
+  onSubmit: (payload: GenerateBidPayload & { top_n?: number }) => void;
   isSubmitting: boolean;
+  mode?: "bid" | "similarity-test";
+  footer?: ReactNode;
 }
 
 const empty = {
@@ -20,6 +22,7 @@ const empty = {
   budget: "",
   skills: [] as string[],
   questions: "",
+  topN: "5",
 };
 
 function parseQuestions(raw: string): string[] {
@@ -29,7 +32,13 @@ function parseQuestions(raw: string): string[] {
     .filter(Boolean);
 }
 
-export function NewBidForm({ activeProfileId, onSubmit, isSubmitting }: NewBidFormProps) {
+export function NewBidForm({
+  activeProfileId,
+  onSubmit,
+  isSubmitting,
+  mode = "bid",
+  footer,
+}: NewBidFormProps) {
   const [form, setForm] = useState(empty);
 
   const set = (patch: Partial<typeof empty>) => setForm((prev) => ({ ...prev, ...patch }));
@@ -39,6 +48,7 @@ export function NewBidForm({ activeProfileId, onSubmit, isSubmitting }: NewBidFo
     if (!form.title.trim() || !form.description.trim()) return;
 
     const questions = parseQuestions(form.questions);
+    const topN = Number(form.topN);
 
     onSubmit({
       title: form.title.trim(),
@@ -47,8 +57,12 @@ export function NewBidForm({ activeProfileId, onSubmit, isSubmitting }: NewBidFo
       skills: form.skills,
       questions: questions.length > 0 ? questions : undefined,
       profile_id: activeProfileId ?? undefined,
+      ...(mode === "similarity-test" ? { top_n: topN } : {}),
     });
   };
+
+  const isSimilarityTest = mode === "similarity-test";
+  const topNValue = Number(form.topN);
 
   return (
     <div className="soft-scrollbar app-canvas flex flex-1 flex-col items-center justify-start overflow-y-auto px-4 py-10 sm:py-14">
@@ -56,11 +70,15 @@ export function NewBidForm({ activeProfileId, onSubmit, isSubmitting }: NewBidFo
         {/* Header */}
         <div className="text-center">
           <p className="mb-3 font-serif text-xs italic tracking-wide text-primary">
-            New Proposal
+            {isSimilarityTest ? "Reference Project Search" : "New Proposal"}
           </p>
-          <h1 className="font-serif text-4xl font-semibold tracking-tight">Draft a winning bid</h1>
+          <h1 className="font-serif text-4xl font-semibold tracking-tight">
+            {isSimilarityTest ? "Test project similarity" : "Draft a winning bid"}
+          </h1>
           <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
-            Paste an Upwork job below and BidCraft will write a tailored proposal in seconds.
+            {isSimilarityTest
+              ? "Compare a job against your reference projects and inspect the closest matches."
+              : "Paste an Upwork job below and BidCraft will write a tailored proposal in seconds."}
           </p>
         </div>
 
@@ -117,6 +135,22 @@ export function NewBidForm({ activeProfileId, onSubmit, isSubmitting }: NewBidFo
             </div>
           </div>
 
+          {isSimilarityTest && (
+            <div className="max-w-xs space-y-1.5">
+              <Label htmlFor="top-n">Number of projects to return</Label>
+              <Input
+                id="top-n"
+                type="number"
+                min={1}
+                max={50}
+                step={1}
+                required
+                value={form.topN}
+                onChange={(e) => set({ topN: e.target.value })}
+              />
+            </div>
+          )}
+
           {/* Screening questions */}
           <div className="space-y-1.5">
             <Label htmlFor="questions">
@@ -140,14 +174,20 @@ export function NewBidForm({ activeProfileId, onSubmit, isSubmitting }: NewBidFo
             <Button
               type="submit"
               size="lg"
-              disabled={isSubmitting || !form.title.trim() || !form.description.trim()}
+              disabled={
+                isSubmitting ||
+                !form.title.trim() ||
+                !form.description.trim() ||
+                (isSimilarityTest && (!Number.isInteger(topNValue) || topNValue < 1 || topNValue > 50))
+              }
               className="gap-2 px-8 shadow-xl shadow-primary/10"
             >
               <Sparkles className="h-4 w-4" />
-              Generate Bid
+              {isSimilarityTest ? "Run Similarity Test" : "Generate Bid"}
             </Button>
           </div>
         </form>
+        {footer}
       </div>
     </div>
   );

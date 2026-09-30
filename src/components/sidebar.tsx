@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   ChevronDown,
   FileText,
+  FlaskConical,
   Folder,
   LogOut,
   MessageSquarePlus,
@@ -154,6 +155,13 @@ export function Sidebar({
           <MessageSquarePlus className="h-4 w-4" />
           New Bid
         </Button>
+        <a
+          href="/similarity-test"
+          className="mt-1 flex h-9 w-full items-center gap-2 rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
+        >
+          <FlaskConical className="h-4 w-4" />
+          Similarity Test
+        </a>
       </div>
 
       {/* Job list */}

@@ -139,6 +139,10 @@ export interface GenerateBidPayload {
   profile_id?: string;
 }
 
+export interface SimilarityTestPayload extends GenerateBidPayload {
+  top_n: number;
+}
+
 // ─── Streaming helper ─────────────────────────────────────────────────────────
 
 async function consumeStream(res: Response, onEvent: (e: StreamEvent) => void): Promise<void> {
@@ -327,6 +331,20 @@ export async function streamGenerateBid(
     signal,
   });
   if (!res.ok || !res.body) throw new Error("Failed to start bid stream");
+  await consumeStream(res, onEvent);
+}
+
+export async function streamSimilarityTest(
+  payload: SimilarityTestPayload,
+  onEvent: (e: StreamEvent) => void,
+  signal: AbortSignal,
+): Promise<void> {
+  const res = await apiJsonFetch("/api/v1/projects/similarity-test", {
+    method: "POST",
+    body: JSON.stringify(payload),
+    signal,
+  });
+  if (!res.ok || !res.body) throw new Error("Failed to start similarity test");
   await consumeStream(res, onEvent);
 }
 
