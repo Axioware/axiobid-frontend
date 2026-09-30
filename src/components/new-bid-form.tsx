@@ -91,7 +91,7 @@ export function NewBidForm({
             <Input
               id="jt"
               required
-              maxLength={200}
+              maxLength={800}
               value={form.title}
               onChange={(e) => set({ title: e.target.value })}
               placeholder="e.g. Full-stack developer for SaaS dashboard"
@@ -106,7 +106,7 @@ export function NewBidForm({
               id="jd"
               required
               rows={8}
-              maxLength={10000}
+              maxLength={40000}
               value={form.description}
               onChange={(e) => set({ description: e.target.value })}
               placeholder="Paste the full Upwork job description here..."
@@ -119,7 +119,7 @@ export function NewBidForm({
               <Label htmlFor="budget">Budget</Label>
               <Input
                 id="budget"
-                maxLength={50}
+                maxLength={200}
                 value={form.budget}
                 onChange={(e) => set({ budget: e.target.value })}
                 placeholder="$500–800"
@@ -159,7 +159,7 @@ export function NewBidForm({
             <Textarea
               id="questions"
               rows={4}
-              maxLength={4000}
+              maxLength={16000}
               value={form.questions}
               onChange={(e) => set({ questions: e.target.value })}
               placeholder={"Paste each question the client asked on its own line...\ne.g.\nHow many years of React experience do you have?\nCan you start immediately?"}

@@ -207,7 +207,7 @@ export function ChatView({
             <Textarea
               ref={textareaRef}
               value={instruction}
-              maxLength={1000}
+              maxLength={4000}
               onChange={(e) => setInstruction(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={

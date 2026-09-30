@@ -109,7 +109,7 @@ export function ProfileModal({
             <Input
               id="profile-name"
               value={name}
-              maxLength={100}
+              maxLength={400}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Full-Stack Developer"
             />
@@ -120,7 +120,7 @@ export function ProfileModal({
             <Textarea
               id="profile-bio"
               value={bio}
-              maxLength={1000}
+              maxLength={4000}
               rows={3}
               onChange={(e) => setBio(e.target.value)}
               placeholder="Brief description of your expertise..."

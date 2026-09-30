@@ -172,7 +172,7 @@ export function PromptsModal({ open, onClose }: PromptsModalProps) {
                         value={newType}
                         onChange={(e) => setNewType(e.target.value)}
                         placeholder="e.g. bid_generation"
-                        maxLength={100}
+                        maxLength={400}
                       />
                     </div>
                     <Label>Prompt</Label>
