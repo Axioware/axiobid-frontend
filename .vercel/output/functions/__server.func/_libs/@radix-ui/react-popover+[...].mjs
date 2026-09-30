@@ -1,6 +1,6 @@
 import { i as __toESM } from "../../_runtime.mjs";
 import { a as offset, c as useFloating, i as limitShift, n as flip, o as shift, r as hide, s as size, t as arrow, u as require_react } from "../@floating-ui/react-dom+[...].mjs";
-import { C as useCallbackRef, D as useLayoutEffect2, E as useControllableState, M as useComposedRefs, N as require_jsx_runtime, O as createContextScope, S as DismissableLayer, T as Presence, _ as hideOthers, b as Portal$1, j as createSlot, k as Primitive, v as ReactRemoveScroll, w as useId, x as FocusScope, y as useFocusGuards } from "./react-alert-dialog+[...].mjs";
+import { C as DismissableLayer, D as useLayoutEffect2, E as useId, M as useComposedRefs, N as require_jsx_runtime, O as createContextScope, S as FocusScope, T as useControllableState, _ as hideOthers, b as Presence, j as createSlot, k as Primitive, v as ReactRemoveScroll, w as useCallbackRef, x as Portal$1, y as useFocusGuards } from "./react-alert-dialog+[...].mjs";
 import { t as composeEventHandlers } from "../radix-ui__primitive.mjs";
 import { n as autoUpdate } from "../@floating-ui/dom+[...].mjs";
 import { t as Root } from "../radix-ui__react-arrow.mjs";
@@ -548,4 +548,4 @@ var Trigger = PopoverTrigger;
 var Portal = PopoverPortal;
 var Content2 = PopoverContent;
 //#endregion
-export { Anchor as a, Root2$1 as c, Trigger as i, createPopperScope as l, Portal as n, Arrow as o, Root2 as r, Content as s, Content2 as t };
+export { Anchor as a, Root2$1 as c, Trigger as i, createPopperScope as l, Portal as n, Arrow as o, Root2 as r, Content as s, Content2 as t, useSize as u };
