@@ -150,6 +150,14 @@ export function ChatView({
     if (!canSubmit) return;
     onRevise(instruction.trim());
     setInstruction("");
+    if (textareaRef.current) textareaRef.current.style.height = "24px";
+  };
+
+  const handleInstructionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const textarea = e.currentTarget;
+    setInstruction(textarea.value);
+    textarea.style.height = "24px";
+    textarea.style.height = `${Math.min(textarea.scrollHeight, 160)}px`;
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -207,8 +215,8 @@ export function ChatView({
             <Textarea
               ref={textareaRef}
               value={instruction}
-              maxLength={4000}
-              onChange={(e) => setInstruction(e.target.value)}
+              maxLength={80000}
+              onChange={handleInstructionChange}
               onKeyDown={handleKeyDown}
               placeholder={
                 latestBidId
@@ -217,7 +225,7 @@ export function ChatView({
               }
               disabled={!latestBidId || streaming}
               rows={1}
-              className="max-h-[160px] min-h-[24px] flex-1 resize-none border-0 bg-transparent p-0 text-sm shadow-none placeholder:text-muted-foreground/60 focus-visible:ring-0"
+              className="max-h-[160px] min-h-[24px] flex-1 resize-none overflow-y-auto border-0 bg-transparent p-0 text-sm shadow-none placeholder:text-muted-foreground/60 focus-visible:ring-0"
             />
             {streaming ? (
               <Button

@@ -112,7 +112,7 @@ export function AddProjectModal({
             <Input
               id="proj-title"
               value={title}
-              maxLength={800}
+              maxLength={16000}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. E-commerce platform rebuild"
             />
@@ -125,7 +125,7 @@ export function AddProjectModal({
             <Textarea
               id="proj-desc"
               value={description}
-              maxLength={20000}
+              maxLength={400000}
               rows={4}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="What you built, the problem it solved, your role..."
@@ -146,7 +146,7 @@ export function AddProjectModal({
               <Input
                 id="proj-tech-stack"
                 value={techStack}
-                maxLength={2000}
+                maxLength={40000}
                 onChange={(e) => setTechStack(e.target.value)}
                 placeholder="React, FastAPI, PostgreSQL"
               />
@@ -160,7 +160,7 @@ export function AddProjectModal({
             <Textarea
               id="proj-outcome"
               value={outcome}
-              maxLength={4000}
+              maxLength={80000}
               rows={2}
               onChange={(e) => setOutcome(e.target.value)}
               placeholder="Results, metrics, client feedback..."

@@ -368,7 +368,7 @@ export function ProjectsModal({
                 <Input
                   id="proj-title"
                   value={form.title}
-                  maxLength={800}
+                  maxLength={16000}
                   onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                   placeholder="e.g. E-commerce platform rebuild"
                 />
@@ -381,7 +381,7 @@ export function ProjectsModal({
                 <Textarea
                   id="proj-desc"
                   value={form.description}
-                  maxLength={20000}
+                  maxLength={400000}
                   rows={4}
                   onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
                   placeholder="What you built, the problem it solved, your role..."
@@ -402,7 +402,7 @@ export function ProjectsModal({
                   <Input
                     id="proj-tech-stack"
                     value={form.techStack}
-                    maxLength={2000}
+                    maxLength={40000}
                     onChange={(e) => setForm((f) => ({ ...f, techStack: e.target.value }))}
                     placeholder="React, FastAPI, PostgreSQL"
                   />
@@ -419,7 +419,7 @@ export function ProjectsModal({
                 <Textarea
                   id="proj-outcome"
                   value={form.outcome}
-                  maxLength={4000}
+                  maxLength={80000}
                   rows={2}
                   onChange={(e) => setForm((f) => ({ ...f, outcome: e.target.value }))}
                   placeholder="Results, metrics, client feedback..."
